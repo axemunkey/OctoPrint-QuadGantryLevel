@@ -1,5 +1,6 @@
 # coding=utf-8
 import setuptools
+import os
 
 # The plugin's identifier, has to be unique
 plugin_identifier = "quadgantrylevel"
@@ -8,33 +9,33 @@ plugin_identifier = "quadgantrylevel"
 plugin_package = "octoprint_quadgantrylevel"
 
 # The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the plugin module
-plugin_name = "OctoPrint-QuadGantryLevel" # You might want to change this if the repo name changes
+plugin_name = "OctoPrint-QuadGantryLevel"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.1.0"
+plugin_version = "0.1.0" # Consider incrementing if you re-release (e.g., 0.1.1)
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin module
 plugin_description = """Adds a button to the Control tab to run QUAD_GANTRY_LEVEL."""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "Nicholas Rothgeb" # Replaced placeholder
+plugin_author = "Nicholas Rothgeb"
 
 # The plugin's author's email address.
-plugin_author_email = "nicholas.rothgeb@gmail.com" # Replaced placeholder
+plugin_author_email = "nicholas.rothgeb@gmail.com"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
-# Ensure this matches the repository name used in __init__.py get_update_information
-plugin_repo_name = "OctoPrint-QuadGantryLevel" # Define repo name here
-plugin_url = f"https://github.com/axemunkey/{plugin_repo_name}" # Replaced placeholder and used repo name
+plugin_repo_name = "OctoPrint-QuadGantryLevel"
+plugin_url = f"https://github.com/axemunkey/{plugin_repo_name}"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
-plugin_license = "CC BY-NC-SA 4.0" # Updated license to Creative Commons BY-NC-SA 4.0
+plugin_license = "CC BY-NC-SA 4.0"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = []
 
 # Additional package data to install
-plugin_additional_data = []
+# In this case, we need the templates and static files
+plugin_package_data = {plugin_package: ["templates/*", "static/js/*", "static/css/*"]} # Include CSS if you add it
 
 # Link to the plugin implementation module folder
 plugin_namespace = "octoprint_quadgantrylevel"
@@ -42,14 +43,33 @@ plugin_namespace = "octoprint_quadgantrylevel"
 # Path to the plugin implementation module file
 plugin_entry_point = "octoprint_quadgantrylevel:__plugin_load__"
 
-# Additional setup arguments, e.g. list of requires
-# See https://github.com/OctoPrint/OctoPrint/wiki/Plugin:-Packaging#providing-additional-data-files
-# and https://packaging.python.org/en/latest/discussions/install-requires-vs-requirements/
-# for details
-setup_requires = []
-install_requires = plugin_requires
-extras_require = {}
+# Find packages automatically
+packages = setuptools.find_packages(exclude=("tests", "tests.*"))
 
+# Define the setup arguments directly
+setup_kwargs = {
+    "name": plugin_name,
+    "version": plugin_version,
+    "description": plugin_description,
+    "long_description": plugin_description, # Often same as description for simple plugins
+    "author": plugin_author,
+    "author_email": plugin_author_email,
+    "url": plugin_url,
+    "license": plugin_license,
+    "packages": packages,
+    "include_package_data": True, # Tells setuptools to include files from MANIFEST.in or package_data
+    "package_data": plugin_package_data,
+    "install_requires": plugin_requires,
+    "entry_points": {
+        # Define the entry point for OctoPrint plugin loading
+        "octoprint.plugin": [
+            f"{plugin_identifier} = {plugin_entry_point}"
+        ]
+    },
+    "python_requires": ">=3.7,<4", # Match python compat from __init__.py
+}
+
+# Check if octoprint_setuptools is available, just in case, but don't rely on the newer function
 try:
     import octoprint_setuptools
 except ImportError:
@@ -57,36 +77,10 @@ except ImportError:
         "Could not import OctoPrint's setuptools, are you sure you are running that under "
         "the same python installation that OctoPrint is installed under?"
     )
-    import sys
-    sys.exit(-1)
+    # Depending on the environment, you might want to exit or just proceed
+    # import sys
+    # sys.exit(-1)
+    pass # Proceed even if not found, basic setuptools might work
 
-# Pass the GitHub repository name to the plugin implementation
-plugin_info = {
-    "github_repo": plugin_repo_name
-}
-
-# Note: Standard PyPI classifiers don't include CC BY-NC-SA 4.0.
-# If distributing via PyPI, you might need to use a generic classifier
-# like 'License :: Other/Proprietary License' and rely on the README/LICENSE file.
-# However, for OctoPrint's plugin repository, specifying the string is usually sufficient.
-setup_kwargs = octoprint_setuptools.create_plugin_setup_kwargs(
-    identifier=plugin_identifier,
-    package=plugin_package,
-    name=plugin_name,
-    version=plugin_version,
-    description=plugin_description,
-    author=plugin_author,
-    mail=plugin_author_email,
-    url=plugin_url,
-    license=plugin_license, # Pass the updated license string
-    requires=plugin_requires,
-    additional_data=plugin_additional_data,
-    namespace=plugin_namespace,
-    entry_point=plugin_entry_point,
-    setup_requires=setup_requires,
-    install_requires=install_requires,
-    extras_require=extras_require,
-    plugin_info=plugin_info # Pass additional info
-)
-
+# Perform the setup
 setuptools.setup(**setup_kwargs)
