@@ -14,9 +14,9 @@ A simple OctoPrint plugin that adds a button to the Control tab to trigger the `
 
 ## Setup
 
-Install via the bundled Plugin Manager or manually using this URL:
+Install via the bundled Plugin Manager or manually using this URL (points to the master branch):
 
-https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/main.zip
+https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/master.zip
 Alternatively, you can install manually from the command line:
 
 1.  SSH into your OctoPrint server (e.g., OctoPi).
@@ -27,13 +27,13 @@ Alternatively, you can install manually from the command line:
     *(Note: The path `~/oprint/` might differ based on your setup)*
 3.  Install the plugin from the cloned repository or downloaded source:
     ```bash
-    # Option 1: Clone the repository
+    # Option 1: Clone the repository (will clone the default branch, likely master)
     # git clone [https://github.com/axemunkey/OctoPrint-QuadGantryLevel.git](https://github.com/axemunkey/OctoPrint-QuadGantryLevel.git)
     # cd OctoPrint-QuadGantryLevel
     # pip install .
 
-    # Option 2: Install directly from GitHub URL (replace 'main' with a specific tag/release if needed)
-    pip install "[https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/main.zip](https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/main.zip)"
+    # Option 2: Install directly from GitHub URL (using master branch)
+    pip install "[https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/master.zip](https://github.com/axemunkey/OctoPrint-QuadGantryLevel/archive/master.zip)"
     ```
 4.  Restart the OctoPrint server:
     ```bash
