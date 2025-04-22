@@ -2,8 +2,10 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
+import flask # Ensure flask is imported
+
 # Removed: from octoprint.util import RepeatedTimer (not used)
-import flask
+
 
 # Removed TemplatePlugin from the list of inherited classes
 class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
@@ -42,8 +44,6 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         }
 
     ##~~ TemplatePlugin mixin - REMOVED ~~##
-    # The get_template_configs method has been removed entirely as we
-    # are no longer using the TemplatePlugin system for UI injection.
 
     ##~~ SimpleApiPlugin mixin
 
@@ -63,14 +63,15 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
             # Check printer state before sending command
             if not self._printer.is_operational() or self._printer.is_printing():
                 self._logger.warning("Printer not operational or is printing, cannot run QUAD_GANTRY_LEVEL.")
-                # Return a conflict response
+                # Return a conflict response (this is fine as text)
                 return flask.make_response("Printer not ready", 409)
 
             self._logger.info("Sending QUAD_GANTRY_LEVEL command.")
             # Send the G-code command to the printer
             self._printer.commands("QUAD_GANTRY_LEVEL")
-            # Return a success response
-            return flask.make_response("Command sent", 200)
+
+            # *** FIX: Return an empty JSON object on success ***
+            return flask.jsonify({}) # Changed from make_response("Command sent", 200)
 
         # Return not found if the command is unknown
         return flask.make_response("Unknown command", 404)
@@ -113,5 +114,4 @@ def __plugin_load__():
     __plugin_hooks__ = {
         # Register the software update information hook
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
-        # No template hooks needed anymore
     }
