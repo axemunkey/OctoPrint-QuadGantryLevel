@@ -12,7 +12,7 @@ plugin_package = "octoprint_quadgantrylevel"
 plugin_name = "OctoPrint-QuadGantryLevel"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.1.0" # Consider incrementing if you re-release (e.g., 0.1.1)
+plugin_version = "0.1.1" # Incremented version number for the update
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin module
 plugin_description = """Adds a button to the Control tab to run QUAD_GANTRY_LEVEL."""
@@ -32,10 +32,6 @@ plugin_license = "CC BY-NC-SA 4.0"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = []
-
-# Additional package data to install
-# In this case, we need the templates and static files
-plugin_package_data = {plugin_package: ["templates/*", "static/js/*", "static/css/*"]} # Include CSS if you add it
 
 # Link to the plugin implementation module folder
 plugin_namespace = "octoprint_quadgantrylevel"
@@ -57,8 +53,8 @@ setup_kwargs = {
     "url": plugin_url,
     "license": plugin_license,
     "packages": packages,
-    "include_package_data": True, # Tells setuptools to include files from MANIFEST.in or package_data
-    "package_data": plugin_package_data,
+    "include_package_data": True, # Tells setuptools to use MANIFEST.in
+    # "package_data": plugin_package_data, # Removed this line - rely on MANIFEST.in
     "install_requires": plugin_requires,
     "entry_points": {
         # Define the entry point for OctoPrint plugin loading
@@ -77,9 +73,6 @@ except ImportError:
         "Could not import OctoPrint's setuptools, are you sure you are running that under "
         "the same python installation that OctoPrint is installed under?"
     )
-    # Depending on the environment, you might want to exit or just proceed
-    # import sys
-    # sys.exit(-1)
     pass # Proceed even if not found, basic setuptools might work
 
 # Perform the setup
