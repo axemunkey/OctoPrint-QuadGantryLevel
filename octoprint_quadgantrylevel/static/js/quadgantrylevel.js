@@ -1,8 +1,8 @@
 /*
  * View model for OctoPrint-QuadGantryLevel
  *
- * Author: Your Name
- * License: AGPLv3
+ * Author: Nicholas Rothgeb
+ * License: CC BY-NC-SA 4.0
  */
 $(function() {
     function QuadgantrylevelViewModel(parameters) {
@@ -22,8 +22,8 @@ $(function() {
             // Check again just before sending, although button enable state should prevent this
             if (!self.printerState.isOperational() || self.printerState.isPrinting()) {
                 console.warn("QuadGantryLevel: Printer not ready, command blocked by UI.");
-                // Optionally show a notification
-                // new PNotify({ title: 'Printer Not Ready', text: 'Cannot run Quad Gantry Level while printer is not operational or printing.', type: 'warning', hide: true });
+                // Show a notification using PNotify (OctoPrint's notification library)
+                new PNotify({ title: 'Printer Not Ready', text: 'Cannot run Gantry Level while printer is not operational or printing.', type: 'warning', hide: true, delay: 3000 }); // Increased delay slightly
                 return;
             }
 
@@ -33,8 +33,8 @@ $(function() {
             OctoPrint.simpleApiCommand("quadgantrylevel", "run_quad_gantry_level", {})
                 .done(function(response) {
                     console.log("QuadGantryLevel: Command sent successfully.", response);
-                    // Optionally show success notification
-                    // new PNotify({ title: 'Command Sent', text: 'QUAD_GANTRY_LEVEL command sent to printer.', type: 'success', hide: true });
+                    // Show success notification
+                    new PNotify({ title: 'Command Sent', text: 'QUAD_GANTRY_LEVEL command sent to printer.', type: 'success', hide: true, delay: 3000 }); // Increased delay slightly
                 })
                 .fail(function(jqXHR, textStatus, errorThrown) {
                     console.error("QuadGantryLevel: Failed to send command.", textStatus, errorThrown, jqXHR.responseText);
@@ -50,26 +50,68 @@ $(function() {
 
         // --- OctoPrint Hooks ---
 
-        /*
-        // Example: If you needed to bind this view model to a specific element
-        self.onBeforeBinding = function() {
-            // Initialization logic before Knockout bindings are applied
-        }
+        /**
+         * Called by OctoPrint after the main UI bindings have been applied.
+         * We use this hook to manually inject our button HTML into the DOM
+         * and then apply Knockout bindings specifically to our injected element.
+         */
+        self.onAfterBinding = function() {
+            console.log("QuadGantryLevel: onAfterBinding called. Attempting to inject button.");
 
-        // Example: If you needed access to settings
-        self.onSettingsShown = function() {
-            // Logic when the plugin's settings dialog is shown
-        }
-        */
+            // Define the HTML structure for our button panel
+            var buttonHtml = `
+                <div id="quadgantrylevel_control_button" class="jog-panel">
+                    <h4>Quad Gantry Level</h4>
+                    <button class="btn btn-block"
+                            data-bind="click: runQuadGantryLevel,
+                                       enable: loginState.isUser() && printerState.isOperational() && !printerState.isPrinting()">
+                        <i class="fas fa-balance-scale-right"></i>
+                        Gantry Level
+                    </button>
+                </div>
+            `;
+
+            // Select the target element on the Control tab to insert our panel after.
+            // #control-jog-general is the div containing the 'Motors Off', 'Fan On/Off' buttons.
+            // This seems reasonably stable in the default OctoPrint UI.
+            var targetElement = $("#control-jog-general");
+
+            if (targetElement.length) {
+                // If the target element exists, insert our HTML after it.
+                targetElement.after(buttonHtml);
+                console.log("QuadGantryLevel: Button HTML injected after #control-jog-general.");
+
+                // Get a reference to the DOM element we just inserted.
+                var insertedElement = document.getElementById('quadgantrylevel_control_button');
+
+                if (insertedElement) {
+                    // Apply Knockout bindings specifically to our new element.
+                    // The third parameter 'self' provides the context (our view model).
+                    ko.applyBindingsToNode(insertedElement, { viewModel: self }, self);
+                    console.log("QuadGantryLevel: Knockout bindings applied to #quadgantrylevel_control_button.");
+                } else {
+                     // Log an error if we couldn't find the element immediately after inserting it.
+                     console.error("QuadGantryLevel: CRITICAL - Failed to find #quadgantrylevel_control_button immediately after injection.");
+                }
+            } else {
+                // Log an error if the target element (#control-jog-general) wasn't found.
+                // This might happen if another plugin significantly alters the Control tab structure.
+                console.error("QuadGantryLevel: Could not find target element '#control-jog-general' to insert button after. Button not added.");
+            }
+        };
     }
 
+    /* OCTOPRINT VIEWMODELS */
     // Register the view model with OctoPrint
-    // Dependencies are injected into the constructor in the order specified here
     OCTOPRINT_VIEWMODELS.push({
         construct: QuadgantrylevelViewModel,
-        // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, printerStateViewModel
-        dependencies: [ "loginStateViewModel", "settingsViewModel", "printerStateViewModel" ],
-        // Elements to bind to, e.g. ["#settings_plugin_quadgantrylevel", "#navbar_plugin_quadgantrylevel"]
-        elements: [ "#quadgantrylevel_control_button" ] // Bind to the div containing our button
+        // List of view models we depend on (for printer state, login state etc.)
+        dependencies: [
+            "loginStateViewModel",
+            "settingsViewModel",
+            "printerStateViewModel"
+        ],
+        // We removed the 'elements' array here because we are manually injecting
+        // and binding the UI element in the onAfterBinding function.
     });
 });

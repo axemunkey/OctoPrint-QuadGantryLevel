@@ -12,7 +12,7 @@ plugin_package = "octoprint_quadgantrylevel"
 plugin_name = "OctoPrint-QuadGantryLevel"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.1.1" # Incremented version number for the update
+plugin_version = "0.1.2" # Incremented version number
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin module
 plugin_description = """Adds a button to the Control tab to run QUAD_GANTRY_LEVEL."""
@@ -54,7 +54,6 @@ setup_kwargs = {
     "license": plugin_license,
     "packages": packages,
     "include_package_data": True, # Tells setuptools to use MANIFEST.in
-    # "package_data": plugin_package_data, # Removed this line - rely on MANIFEST.in
     "install_requires": plugin_requires,
     "entry_points": {
         # Define the entry point for OctoPrint plugin loading

@@ -2,17 +2,16 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
-from octoprint.util import RepeatedTimer
+# Removed: from octoprint.util import RepeatedTimer (not used)
 import flask
 
+# Removed TemplatePlugin from the list of inherited classes
 class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
-                            octoprint.plugin.TemplatePlugin,
                             octoprint.plugin.AssetPlugin,
                             octoprint.plugin.SimpleApiPlugin,
                             octoprint.plugin.SettingsPlugin):
 
     def __init__(self):
-        # No timer needed for this simple version
         pass
 
     ##~~ SettingsPlugin mixin
@@ -21,9 +20,7 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         """
         Defines the default settings for the plugin.
         """
-        return dict(
-            # No specific settings needed for this simple version yet
-        )
+        return dict()
 
     ##~~ StartupPlugin mixin
 
@@ -39,23 +36,14 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         """
         Defines the static assets (JS, CSS) bundled with the plugin.
         """
+        # Ensure the JS file is still included
         return {
             "js": ["js/quadgantrylevel.js"]
-            # "css": ["css/quadgantrylevel.css"] # Add if custom styling is needed
         }
 
-    ##~~ TemplatePlugin mixin
-
-    def get_template_configs(self):
-        """
-        Defines the Jinja2 templates provided by the plugin.
-        Yields template configurations one by one.
-        """
-        # Define the template for the control tab section using yield
-        yield dict(type="controls", template="quadgantrylevel_control.jinja2", custom_bindings=True)
-        # Example for settings:
-        # yield dict(type="settings", template="quadgantrylevel_settings.jinja2", custom_bindings=False)
-
+    ##~~ TemplatePlugin mixin - REMOVED ~~##
+    # The get_template_configs method has been removed entirely as we
+    # are no longer using the TemplatePlugin system for UI injection.
 
     ##~~ SimpleApiPlugin mixin
 
@@ -95,39 +83,23 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         Defines how OctoPrint checks for plugin updates.
         """
         # Define the update check configuration directly.
-        # !! Replace "OctoPrint-QuadGantryLevel" if your repo name is different !!
         repo_name = "OctoPrint-QuadGantryLevel"
         github_user = "axemunkey"
 
         return {
-            # Plugin identifier (must match setup.py and registration)
             "quadgantrylevel": {
                 "displayName": "Quad Gantry Level Plugin",
                 "displayVersion": self._plugin_version,
-
-                # Type of update mechanism
                 "type": "github_release",
-
-                # GitHub repository details
                 "user": github_user,
                 "repo": repo_name,
-
-                # Current version of the plugin
                 "current": self._plugin_version,
-
-                # Update method: pip install from github release zip
                 "pip": f"https://github.com/{github_user}/{repo_name}/archive/{{target_version}}.zip",
-
-                # Optionally, you can specify tags/branches to check
-                # "tags": True, # Check tags instead of releases
-                # "branches": "main", # Check a specific branch
             }
         }
 
 # Associate the plugin with OctoPrint's plugin system
-# Plugin Name (can be overridden by __plugin_name__ in __init__.py)
 __plugin_name__ = "Quad Gantry Level"
-# Python Compatibility (important for OctoPrint >= 1.4.0)
 __plugin_pythoncompat__ = ">=3.7,<4"
 
 def __plugin_load__():
@@ -141,4 +113,5 @@ def __plugin_load__():
     __plugin_hooks__ = {
         # Register the software update information hook
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+        # No template hooks needed anymore
     }
