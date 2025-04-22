@@ -1,0 +1,9 @@
+# Include the template files
+recursive-include octoprint_quadgantrylevel/templates *
+
+# Include the static files
+recursive-include octoprint_quadgantrylevel/static *
+
+# Include standard project files
+include README.md
+include LICENSE
