@@ -49,13 +49,13 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
     def get_template_configs(self):
         """
         Defines the Jinja2 templates provided by the plugin.
+        Yields template configurations one by one.
         """
-        return [
-            # Define the template for the control tab section
-            dict(type="controls", template="quadgantrylevel_control.jinja2", custom_bindings=True)
-            # Example for settings:
-            # dict(type="settings", template="quadgantrylevel_settings.jinja2", custom_bindings=False)
-        ]
+        # Define the template for the control tab section using yield
+        yield dict(type="controls", template="quadgantrylevel_control.jinja2", custom_bindings=True)
+        # Example for settings:
+        # yield dict(type="settings", template="quadgantrylevel_settings.jinja2", custom_bindings=False)
+
 
     ##~~ SimpleApiPlugin mixin
 
