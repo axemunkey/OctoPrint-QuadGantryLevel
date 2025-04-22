@@ -23,7 +23,7 @@ $(function() {
             if (!self.printerState.isOperational() || self.printerState.isPrinting()) {
                 console.warn("QuadGantryLevel: Printer not ready, command blocked by UI.");
                 // Show a notification using PNotify (OctoPrint's notification library)
-                new PNotify({ title: 'Printer Not Ready', text: 'Cannot run Gantry Level while printer is not operational or printing.', type: 'warning', hide: true, delay: 3000 }); // Increased delay slightly
+                new PNotify({ title: 'Printer Not Ready', text: 'Cannot run Gantry Level while printer is not operational or printing.', type: 'warning', hide: true, delay: 3000 });
                 return;
             }
 
@@ -34,7 +34,7 @@ $(function() {
                 .done(function(response) {
                     console.log("QuadGantryLevel: Command sent successfully.", response);
                     // Show success notification
-                    new PNotify({ title: 'Command Sent', text: 'QUAD_GANTRY_LEVEL command sent to printer.', type: 'success', hide: true, delay: 3000 }); // Increased delay slightly
+                    new PNotify({ title: 'Command Sent', text: 'QUAD_GANTRY_LEVEL command sent to printer.', type: 'success', hide: true, delay: 3000 });
                 })
                 .fail(function(jqXHR, textStatus, errorThrown) {
                     console.error("QuadGantryLevel: Failed to send command.", textStatus, errorThrown, jqXHR.responseText);
@@ -59,12 +59,13 @@ $(function() {
             console.log("QuadGantryLevel: onAfterBinding called. Attempting to inject button.");
 
             // Define the HTML structure for our button panel
+            // Note: Using $data context for bindings as we apply bindings specifically to this node.
             var buttonHtml = `
                 <div id="quadgantrylevel_control_button" class="jog-panel">
                     <h4>Quad Gantry Level</h4>
                     <button class="btn btn-block"
-                            data-bind="click: runQuadGantryLevel,
-                                       enable: loginState.isUser() && printerState.isOperational() && !printerState.isPrinting()">
+                            data-bind="click: $data.runQuadGantryLevel,
+                                       enable: $data.loginState.isUser() && $data.printerState.isOperational() && !$data.printerState.isPrinting()">
                         <i class="fas fa-balance-scale-right"></i>
                         Gantry Level
                     </button>
@@ -73,7 +74,6 @@ $(function() {
 
             // Select the target element on the Control tab to insert our panel after.
             // #control-jog-general is the div containing the 'Motors Off', 'Fan On/Off' buttons.
-            // This seems reasonably stable in the default OctoPrint UI.
             var targetElement = $("#control-jog-general");
 
             if (targetElement.length) {
@@ -86,32 +86,26 @@ $(function() {
 
                 if (insertedElement) {
                     // Apply Knockout bindings specifically to our new element.
-                    // The third parameter 'self' provides the context (our view model).
-                    ko.applyBindingsToNode(insertedElement, { viewModel: self }, self);
+                    // Pass the view model (self) and the element node.
+                    ko.applyBindings(self, insertedElement); // <-- Simplified this call
                     console.log("QuadGantryLevel: Knockout bindings applied to #quadgantrylevel_control_button.");
                 } else {
-                     // Log an error if we couldn't find the element immediately after inserting it.
                      console.error("QuadGantryLevel: CRITICAL - Failed to find #quadgantrylevel_control_button immediately after injection.");
                 }
             } else {
-                // Log an error if the target element (#control-jog-general) wasn't found.
-                // This might happen if another plugin significantly alters the Control tab structure.
                 console.error("QuadGantryLevel: Could not find target element '#control-jog-general' to insert button after. Button not added.");
             }
         };
     }
 
     /* OCTOPRINT VIEWMODELS */
-    // Register the view model with OctoPrint
     OCTOPRINT_VIEWMODELS.push({
         construct: QuadgantrylevelViewModel,
-        // List of view models we depend on (for printer state, login state etc.)
         dependencies: [
             "loginStateViewModel",
             "settingsViewModel",
             "printerStateViewModel"
         ],
-        // We removed the 'elements' array here because we are manually injecting
-        // and binding the UI element in the onAfterBinding function.
+        // No 'elements' array needed here
     });
 });
