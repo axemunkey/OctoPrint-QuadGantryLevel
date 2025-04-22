@@ -12,7 +12,8 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
                             octoprint.plugin.SettingsPlugin):
 
     def __init__(self):
-        self._qgl_timer = None
+        # No timer needed for this simple version
+        pass
 
     ##~~ SettingsPlugin mixin
 
@@ -50,7 +51,10 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         Defines the Jinja2 templates provided by the plugin.
         """
         return [
+            # Define the template for the control tab section
             dict(type="controls", template="quadgantrylevel_control.jinja2", custom_bindings=True)
+            # Example for settings:
+            # dict(type="settings", template="quadgantrylevel_settings.jinja2", custom_bindings=False)
         ]
 
     ##~~ SimpleApiPlugin mixin
@@ -68,13 +72,21 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         Handles incoming API commands.
         """
         if command == "run_quad_gantry_level":
+            # Check printer state before sending command
             if not self._printer.is_operational() or self._printer.is_printing():
                 self._logger.warning("Printer not operational or is printing, cannot run QUAD_GANTRY_LEVEL.")
-                return flask.make_response("Printer not ready", 409) # Conflict status code
+                # Return a conflict response
+                return flask.make_response("Printer not ready", 409)
 
             self._logger.info("Sending QUAD_GANTRY_LEVEL command.")
+            # Send the G-code command to the printer
             self._printer.commands("QUAD_GANTRY_LEVEL")
+            # Return a success response
             return flask.make_response("Command sent", 200)
+
+        # Return not found if the command is unknown
+        return flask.make_response("Unknown command", 404)
+
 
     ##~~ Softwareupdate hook
 
@@ -82,38 +94,51 @@ class QuadGantryLevelPlugin(octoprint.plugin.StartupPlugin,
         """
         Defines how OctoPrint checks for plugin updates.
         """
-        # Default repository name, can be changed in setup.py
+        # Define the update check configuration directly.
+        # !! Replace "OctoPrint-QuadGantryLevel" if your repo name is different !!
         repo_name = "OctoPrint-QuadGantryLevel"
-        # Attempt to load plugin_info if available (set during packaging)
-        if hasattr(self, "_plugin_info") and self._plugin_info is not None:
-             if "github_repo" in self._plugin_info:
-                 repo_name = self._plugin_info["github_repo"]
+        github_user = "axemunkey"
 
-        return dict(
-            quadgantrylevel=dict(
-                displayName="Quad Gantry Level Plugin",
-                displayVersion=self._plugin_version,
+        return {
+            # Plugin identifier (must match setup.py and registration)
+            "quadgantrylevel": {
+                "displayName": "Quad Gantry Level Plugin",
+                "displayVersion": self._plugin_version,
 
-                # Check against the plugin's repository for new versions
-                type="github_release",
-                user="axemunkey", # Replaced placeholder
-                repo=repo_name, # Use variable for repo name
-                current=self._plugin_version,
+                # Type of update mechanism
+                "type": "github_release",
 
-                # Update method: pip
-                pip="https://github.com/{user}/{repo}/archive/{target_version}.zip"
-            )
-        )
+                # GitHub repository details
+                "user": github_user,
+                "repo": repo_name,
+
+                # Current version of the plugin
+                "current": self._plugin_version,
+
+                # Update method: pip install from github release zip
+                "pip": f"https://github.com/{github_user}/{repo_name}/archive/{{target_version}}.zip",
+
+                # Optionally, you can specify tags/branches to check
+                # "tags": True, # Check tags instead of releases
+                # "branches": "main", # Check a specific branch
+            }
+        }
 
 # Associate the plugin with OctoPrint's plugin system
+# Plugin Name (can be overridden by __plugin_name__ in __init__.py)
 __plugin_name__ = "Quad Gantry Level"
-__plugin_pythoncompat__ = ">=3.7,<4" # Adjust Python compatibility as needed
+# Python Compatibility (important for OctoPrint >= 1.4.0)
+__plugin_pythoncompat__ = ">=3.7,<4"
 
 def __plugin_load__():
+    """
+    Loads the plugin, registers implementations, and hooks.
+    """
     global __plugin_implementation__
     __plugin_implementation__ = QuadGantryLevelPlugin()
 
     global __plugin_hooks__
     __plugin_hooks__ = {
+        # Register the software update information hook
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
     }
